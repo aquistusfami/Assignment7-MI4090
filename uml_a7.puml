@@ -1,0 +1,123 @@
+@startuml uml_a6
+
+!pragma layout smetana
+skinparam backgroundColor white
+skinparam defaultFontName DejaVu Sans
+skinparam dpi 300
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+skinparam nodesep 45
+skinparam ranksep 45
+hide circle
+hide empty members
+
+enum DeviceStatus {
+  Available
+  Borrowed
+  UnderMaintenance
+}
+
+abstract class TeachingDevice <<abstract>> {
+  + DeviceId : string
+  + DeviceName : string
+  + UsedYear : int
+  + Price : decimal
+  + Status : DeviceStatus
+  + TeachingDevice(id : string, name : string,\n  usedYear : int, price : decimal,\n  status : DeviceStatus)
+  + {abstract} CalculateAnnualMaintenanceCost() : decimal
+  + MarkAsBorrowed() : void
+  + MarkAsAvailable() : void
+  + ToString() : string
+}
+
+
+class ClassRoom {
+  + ClassRoomId : string
+  + ClassRoomName : string
+  + Space : decimal
+  - devices : List<TeachingDevice>
+  + ClassRoom(id : string, name : string,\n  space : int)
+  + AddDevice(device : TeachingDevice) : void
+  + RemoveDevice(id : string) : bool
+  + FindDevice(id : string) : TeachingDevice?
+  + CalculateAnnualMaintenanceCost() : decimal
+  + GetDevicesRequiringMaintenance() : List<TeachingDevice>
+  + DisplayInfo() : void
+}
+
+interface IBorrower <<interface>> {
+  + BorrowerId : string
+  + FullName : string
+  + GetMaximumDevices() : int
+}
+
+class BorrowItem {
+  + Device : TeachingDevice
+  + BorrowedDate : DateTime
+  + DueDate : DateTime
+  + FromPeriod : int
+  + ToPeriod : int
+  + ReturnedDate : DateTime?
+  + IsReturned : bool
+  + Return(returnedDate : DateTime) : void
+}
+
+class BorrowingSlip {
+  + SlipId : string
+  + Borrower : IBorrower
+  + TeachingRoom : ClassRoom
+  + BorrowedDate : DateTime
+  + Items : IReadOnlyList<BorrowItem>
+  + AddDevice(device : TeachingDevice, borrowDays : int) : void
+  + ReturnDevice(deviceId : string, returnedDate : DateTime) : void
+  + CalculateTotalLateFee() : decimal
+  + ValidateBorrowing(device : TeachingDevice, borrowDays : int) : void
+  + ValidateReturned(deviceId : string, returnedDate : DateTime) : void
+}
+
+class ACRemote {
+  + CompatibleRooms : IReadOnlySet<string>
+  + IsCompatibleWith(roomId : string) : bool
+  + IsReadyForUse() : bool 
+  + GetDefaultPriorityScore() : double
+}
+
+class Micro {
+  + BatteryLevel : int
+  + SignalQuality : int
+  + IsReadyForUse() : bool 
+  + GetDefaultPriorityScore() : double
+}
+
+class ProjectorRemote {
+  + BatteryLevel : int
+  + IsReadyForUse() : bool 
+  + GetDefaultPriorityScore() : double
+}
+
+class Lecturer {
+  + BorrowerId : string
+  + FullName : string
+  + GetMaximumDevices() : int
+}
+
+class TeachingAssistant {
+  + BorrowerId : string
+  + FullName : string
+  + GetMaximumDevices() : int
+}
+
+BorrowItem "0..*     " --> "1     " TeachingDevice
+BorrowingSlip "0..*" --> "1      " IBorrower
+
+TeachingDevice <|-- ACRemote
+TeachingDevice <|-- Micro
+TeachingDevice <|-- ProjectorRemote
+
+IBorrower <|.. Lecturer
+IBorrower <|.. TeachingAssistant
+ClassRoom "0..*  " o-- "0..*  " TeachingDevice : contains >
+TeachingDevice ..> DeviceStatus : <<use>>
+BorrowingSlip "1   " *-- "0..*  " BorrowItem
+BorrowingSlip "0..*    " --> "1" ClassRoom : TeachingRoom
+@enduml
