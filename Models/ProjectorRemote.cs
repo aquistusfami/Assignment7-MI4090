@@ -12,13 +12,13 @@ public class ProjectorRemote : TeachingDevice
 
   public ProjectorRemote(string id, string name, string storedAt, int batteryLevel) : base(id, name, storedAt)
   {
-    if(this.BatteryLevel < 0 && this.BatteryLevel > 100) throw new ArgumentOutOfRangeException(nameof(batteryLevel),"<!> Mức pin phải nằm trong đoạn từ 0 đến 100.");
-    this.BatteryLevel = batteryLevel;
+    
+if(batteryLevel < 0 || batteryLevel > 100) throw new ArgumentOutOfRangeException(nameof(batteryLevel),"<!> Mức pin phải nằm trong đoạn từ 0 đến 100.");    this.BatteryLevel = batteryLevel;
   }
-  
+
   public override bool IsReadyForUse()
   {
-    if(this.Status == DeviceStatus.Available && this.BatteryLevel > 20) return true;
+    if(this.Status == DeviceStatus.Available && this.BatteryLevel >= 20) return true;
     else return false;
   }
 
