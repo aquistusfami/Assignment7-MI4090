@@ -18,65 +18,65 @@ enum DeviceStatus {
 }
 
 abstract class TeachingDevice <<abstract>> {
-  + DeviceId : string
-  + DeviceName : string
-  + UsedYear : int
-  + Price : decimal
+  + Id : string
+  + Name : string
+  + StoragingLocation : string
   + Status : DeviceStatus
-  + TeachingDevice(id : string, name : string,\n  usedYear : int, price : decimal,\n  status : DeviceStatus)
-  + {abstract} CalculateAnnualMaintenanceCost() : decimal
-  + MarkAsBorrowed() : void
-  + MarkAsAvailable() : void
-  + ToString() : string
+  + TeachingDevice(id : string, name : string,\n  storedAt : string)
+  + {abstract} IsReadyForUse() : bool
+  + {abstract} GetDefaultPriorityScore() : double
+  + Borrow() : void
+  + Return() : void 
+}
+
+interface IRepository<T> <<interface>> {
+  + Add (item : T) : void
+  + Remove (id : string) : bool
+  + FindById(id : string) : T?
+  + GetAll() : IReadOnlyList<T>
+  + FindAll(condition : Predicate<T>) : IReadOnlyList<T>
 }
 
 
-class ClassRoom {
-  + ClassRoomId : string
-  + ClassRoomName : string
-  + Space : decimal
-  - devices : List<TeachingDevice>
-  + ClassRoom(id : string, name : string,\n  space : int)
-  + AddDevice(device : TeachingDevice) : void
-  + RemoveDevice(id : string) : bool
-  + FindDevice(id : string) : TeachingDevice?
-  + CalculateAnnualMaintenanceCost() : decimal
-  + GetDevicesRequiringMaintenance() : List<TeachingDevice>
-  + DisplayInfo() : void
+class "InMemoryRepository<T>" as InMemoryRepository {
+  -items : List<T>
+  +Add(item : T) : void
+  +Remove(id : string) : bool
+  +FindById(id : string) : T?
+  +GetAll() : IReadOnlyList<T>
+  +FindAll(condition : Predicate<T>) : IReadOnlyList<T>
 }
 
-interface IBorrower <<interface>> {
-  + BorrowerId : string
-  + FullName : string
-  + GetMaximumDevices() : int
+interface ISelectionStrategy<T> <<interface>> 
+{
+  + Select(candidates : IReadOnlyList<T>) : T 
 }
 
-class BorrowItem {
-  + Device : TeachingDevice
-  + BorrowedDate : DateTime
-  + DueDate : DateTime
-  + FromPeriod : int
-  + ToPeriod : int
-  + ReturnedDate : DateTime?
-  + IsReturned : bool
-  + Return(returnedDate : DateTime) : void
+class HighestPriorityStrategy<T> 
+{
+  - scoreSelector : Func<T, double>
+  + HighestPriorityStrategy(scoreSelector : Func<T, double>)
+  + Select(candidates : IReadOnlyList<T>) : T
 }
 
-class BorrowingSlip {
-  + SlipId : string
-  + Borrower : IBorrower
-  + TeachingRoom : ClassRoom
-  + BorrowedDate : DateTime
-  + Items : IReadOnlyList<BorrowItem>
-  + AddDevice(device : TeachingDevice, borrowDays : int) : void
-  + ReturnDevice(deviceId : string, returnedDate : DateTime) : void
-  + CalculateTotalLateFee() : decimal
-  + ValidateBorrowing(device : TeachingDevice, borrowDays : int) : void
-  + ValidateReturned(deviceId : string, returnedDate : DateTime) : void
+class FirstAvailableStrategy<T>
+{
+  + Select(candidates : IReadOnlyList<T>) : T
+}
+
+class AllocationService<T>
+{
+  - repository : IRepository<T>
+  - strategy : ISelectionStrategy<T>
+
+  + AllocationService(repository : IRepository<T>, \n strategy : ISelectionStrategy<T>)
+  + ChangeStrategy(newStrategy : ISelectionStrategy<T>) : void 
+  + Allocate(additionalCondition : Predicate<T>) : T
 }
 
 class ACRemote {
   + CompatibleRooms : IReadOnlySet<string>
+  + ACRemote(id : string, name : string,\n  storedAt : string,\n  compatibleRooms : IEnumerable<string>)
   + IsCompatibleWith(roomId : string) : bool
   + IsReadyForUse() : bool 
   + GetDefaultPriorityScore() : double
@@ -85,39 +85,34 @@ class ACRemote {
 class Micro {
   + BatteryLevel : int
   + SignalQuality : int
+  + Micro(id : string, name : string,\n  storedAt : string,\n  batteryLevel : int, signalQuality : int)
   + IsReadyForUse() : bool 
   + GetDefaultPriorityScore() : double
 }
 
 class ProjectorRemote {
   + BatteryLevel : int
+  + ProjectorRemote(id : string, name : string,\n  storedAt : string,\n  batteryLevel : int)
   + IsReadyForUse() : bool 
   + GetDefaultPriorityScore() : double
 }
 
-class Lecturer {
-  + BorrowerId : string
-  + FullName : string
-  + GetMaximumDevices() : int
+interface IIdentifiable <<interface>> 
+{
+  + Id : string
 }
 
-class TeachingAssistant {
-  + BorrowerId : string
-  + FullName : string
-  + GetMaximumDevices() : int
-}
-
-BorrowItem "0..*     " --> "1     " TeachingDevice
-BorrowingSlip "0..*" --> "1      " IBorrower
-
+IRepository ..> IIdentifiable : <<constrains T>>
+TeachingDevice ..|> IIdentifiable
 TeachingDevice <|-- ACRemote
 TeachingDevice <|-- Micro
 TeachingDevice <|-- ProjectorRemote
 
-IBorrower <|.. Lecturer
-IBorrower <|.. TeachingAssistant
-ClassRoom "0..*  " o-- "0..*  " TeachingDevice : contains >
 TeachingDevice ..> DeviceStatus : <<use>>
-BorrowingSlip "1   " *-- "0..*  " BorrowItem
-BorrowingSlip "0..*    " --> "1" ClassRoom : TeachingRoom
+IRepository <|.. InMemoryRepository
+ISelectionStrategy <|.. HighestPriorityStrategy
+ISelectionStrategy <|.. FirstAvailableStrategy
+AllocationService ..> TeachingDevice : <<constrains T>>
+AllocationService --> IRepository : repository
+AllocationService --> ISelectionStrategy : strategy
 @enduml
