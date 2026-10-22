@@ -115,4 +115,31 @@ ISelectionStrategy <|.. FirstAvailableStrategy
 AllocationService ..> TeachingDevice : <<constrains T>>
 AllocationService --> IRepository : repository
 AllocationService --> ISelectionStrategy : strategy
+
+
+class Exception
+class BorrowingException {
+  + BorrowingException(message : string)
+  + BorrowingException(message : string,\n  innerException : Exception)
+}
+
+class DuplicateIdException {
+  + DuplicateId : string
+  + DuplicateIdException(duplicateId : string)
+}
+
+class NoSuitableItemException {
+  + NoSuitableItemException()
+}
+
+class DeviceNotReadyException {
+  + DeviceId : string
+  + CurrentStatus : DeviceStatus
+  + DeviceNotReadyException(deviceId : string,\n  currentStatus : DeviceStatus)
+}
+
+Exception <|-- BorrowingException
+BorrowingException <|-- DuplicateIdException
+BorrowingException <|-- NoSuitableItemException
+BorrowingException <|-- DeviceNotReadyException
 @enduml
