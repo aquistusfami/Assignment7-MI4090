@@ -6,7 +6,7 @@ using System;
 
 namespace Assignment7_MI4090;
 
-/// <summary>7
+/// <summary>
 /// Lớp ngoại lệ mượn đồ
 /// </summary>
 public class BorrowingException : Exception
