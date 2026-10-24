@@ -76,7 +76,7 @@ class Program
             if (ready.Count != 5) throw new Exception($"phải có 5, thực tế {ready.Count}");
             foreach (var id in new[] { "pr001", "pr002", "AC001", "AC002", "WM001" })
                 if (!ready.Any(d => d.Id == id)) throw new Exception($"thiếu {id}");
-            foreach (var id in new[] { "or003", "WM002", "WM003" })
+            foreach (var id in new[] { "pr003", "WM002", "WM003" })
                 if (ready.Any(d => d.Id == id)) throw new Exception($"không được có {id}");
             pass++; Console.WriteLine("OK       4. Lọc sẵn sàng");
         }
@@ -90,7 +90,7 @@ class Program
         try
         {
             var chosen = Svc(Data(), Highest()).Allocate(d => d is ProjectorRemote);
-            if (chosen.Id != "pr002") throw new Exception($"phải là pr001, thực tế {chosen.Id}");
+            if (chosen.Id != "pr002") throw new Exception($"phải là pr002, thực tế {chosen.Id}");
             pass++; Console.WriteLine("OK       5. Chọn máy chiếu điểm cao nhất");
         }
         catch (Exception ex)
@@ -119,7 +119,7 @@ class Program
         try
         {
             var chosen = Svc(Data(), new FirstAvailableStrategy<TeachingDevice>()).Allocate(d => d is Micro);
-            if (chosen.Id != "WM001") throw new Exception($"phải là M1, thực tế {chosen.Id}");
+            if (chosen.Id != "WM001") throw new Exception($"phải là WM001, thực tế {chosen.Id}");
             pass++; Console.WriteLine("OK       7. Chọn micro đầu tiên sẵn sàng");
         }
         catch (Exception ex)
