@@ -5,7 +5,9 @@
 using System;
 
 namespace Assignment7_MI4090;
-
+/// <summary>
+/// Giao diện nhận dạng
+/// </summary>
 public interface IIdentifiable
 {
   public string Id { get; }
